@@ -83,8 +83,79 @@
            2. make --flag1 --flag2 --flagN -- компиляция в локальную папку
            3. make check --flag1 --flag2 --flagN -- проверка корректности установки
            4. make install -- установка глобально
-        Например, что бы скомпилировать gcc, понадобилось сделать три прохода:
+        Например, что бы скомпилировать gcc, понадобилось сделать три прохода(с целью экономии времени и места я приведу всего один подход):
            Проход 1:
-              шаг 1. распаковать архивы с mpfr, gmp, mpc
-              шаг 2: изменить расположение динамического компановщика:
-                ![alt tag](https://pp.userapi.com/c846417/v846417566/1d34b3/xdrIVUbHB8c.jpg)
+              шаг 0: распоковать gcc
+              шаг 1. распаковать архивы с mpfr, gmp, mpc в папку с распакованным gcc
+              шаг 2: изменить расположение динамического компановщика следующим костылём: 
+            
+                for file in gcc/config/{linux,i386/linux{,64}}.h
+                do
+                  cp -uv $file{,.orig}
+                  sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
+                  -e 's@/usr@/tools@g' $file.orig > $file
+                  echo '
+                  #undef STANDARD_STARTFILE_PREFIX_1
+                  #undef STANDARD_STARTFILE_PREFIX_2
+                  #define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
+                  #define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+                  touch $file.orig
+                done
+              шаг 3: В файле gcc/config/i386/t-linux64 заменить пути к библиотекам на /lib64
+              шаг 4: сконфигурировать make файл:
+                ../configure                                       \
+                    --target=$LFS_TGT                              \
+                    --prefix=/tools                                \
+                    --with-glibc-version=2.11                      \
+                    --with-sysroot=$LFS                            \
+                    --with-newlib                                  \
+                    --without-headers                              \
+                    --with-local-prefix=/tools                     \
+                    --with-native-system-header-dir=/tools/include \
+                    --disable-nls                                  \
+                    --disable-shared                               \
+                    --disable-multilib                             \
+                    --disable-decimal-float                        \
+                    --disable-threads                              \
+                    --disable-libatomic                            \
+                    --disable-libgomp                              \
+                    --disable-libmpx                               \
+                    --disable-libquadmath                          \
+                    --disable-libssp                               \
+                    --disable-libvtv                               \
+                    --disable-libstdcxx                            \
+                    --enable-languages=c,c++
+                шаг 5: установка локально, а потом глобально:
+                  make && make install
+        Весь ниже приведённый софт устанавливался примерно по такой схеме, как и gcc выше. Вот что было установлено в нашу временную систему:
+          Binutils-2.32(2 подхода)
+          GCC-8.3.0(3 подхода)
+          Linux headers 5.0
+          Glibc-2.29
+          Libstdc++ из пакета gcc
+          Binutils-2.32
+          Tcl-8.6.9
+          Expect-5.45.4
+          DejaGNU-1.6.2
+          M4-1.4.18
+          Ncurses-6.1
+          Bash-5.0
+          Bison-3.3.2
+          Bzip2-1.0.6
+          Coreutils-8.30
+          Diffutils-3.7
+          File-5.36
+          Findutils-4.6.0
+          Gawk-4.2.1
+          Gettext-0.19.8.1
+          Grep-3.3
+          Gzip-1.10
+          Make-4.2.1
+          Patch-2.7.6
+          Perl-5.28.1
+          Python-3.7.2
+          Sed-4.7
+          Tar-1.32
+          Texinfo-6.6
+          Util-linux-2.33.1
+          Xz-5.2.4
