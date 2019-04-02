@@ -1,43 +1,43 @@
 ### Что это?
 ##### В данном репозитории содержится работа на конкурс IT-planet по компетенции "Лучший Свободный Диплом".
 
-### Название работы: "Серверная операционная система на базе CentOS"
+### Название работы: "Серверная операционная система на базе ядра Linux"
 
 Конечным результатом проекта является ISO образ, содержащий в себе операционную систему, которую можно скачать отсюда.
 
 ##### Как запустить?
 Для тестирования необходим любой Linux дистрибутив или флеш накопитель.
 
-###### Вариант №1: Демо запуск без перезагрузки
+###### Вариант №1: Демо запуск без перезагрузки(эти команды можно просто скопировать)
       Требования:
         1. Любой Linux дистрибутив
         2. Любая shell оболочка
         3. наличие утилиты chroot
 
       Шаг 0: Экспортируем переменную:
-            export $OS=/mnt/os
+            export itplanet=/mnt/itplanet
       Шаг 1: Монтирование образа
-        sudo mkdir /mnt/os
-        sudo mount ~/Downloads/os.iso /mnt/os
+        sudo mkdir /mnt/itplanet
+        sudo mount ~/Downloads/os.iso /mnt/itplanet
       Шаг 2: Монтирование псевдофайловых систем:
 
-            mknod -m 600 $OS/dev/console c 5 1
-            mknod -m 666 $OS/dev/null c 1 3
-            mount -v --bind /dev $OS/dev
-            mount -vt devpts devpts $OS/dev/pts -o gid=5,mode=620
-            mount -vt proc proc $OS/proc
-            mount -vt sysfs sysfs $OS/sys
-            mount -vt tmpfs tmpfs $OS/run
-            if [ -h $OS/dev/shm ]; then
-              mkdir -pv $OS/$(readlink $OS/dev/shm)
+            sudo mknod -m 600 $itplanet/dev/console c 5 1
+            sudo mknod -m 666 $itplanet/dev/null c 1 3
+            sudo mount -v --bind /dev $itplanet/dev
+            sudo mount -vt devpts devpts $itplanet/dev/pts -o gid=5,mode=620
+            sudo mount -vt proc proc $itplanet/proc
+            sudo mount -vt sysfs sysfs $itplanet/sys
+            sudo mount -vt tmpfs tmpfs $itplanet/run
+            if [ -h $itplanet/dev/shm ]; then
+              sudo mkdir -pv $itplanet/$(readlink $itplanet/dev/shm)
             fi
 
       Шаг 3: Вход в виртуальное окружение
 
-      chroot "$OS" /usr/bin/env -i
-        HOME=/root TERM="$TERM"
-        PS1='(yurevich_os chroot) \u:\w\$ '
-        PATH=/bin:/usr/bin:/sbin:/usr/sbin
+      sudo chroot "$itplanet" /usr/bin/env -i \
+        HOME=/root TERM="$TERM" \
+        PS1='(ITplanet_os chroot) \u:\w\$ ' \
+        PATH=/bin:/usr/bin:/sbin:/usr/sbin \
         /bin/bash --login
       Шаг 4: Тестирование работоспособности(например, добавим пользователя)
          useradd -m ITplanet
@@ -48,7 +48,8 @@
         2. режим загрузки "legacy"(хотя возможно работает и с EUFI)
       Шаг 1: Запись на флеш накопитель
          Если хостовая система - linux:
-           dd if=OS.iso of=/dev/адрес_устройства ( например /dev/sda1)
+           dd if=os.iso of=/dev/адрес_тома ( например /dev/sda1)
+           grub-install /dev/адрес_устройства (например /dev/sda ) 
         Если хостовая система - windows, то воспользуйтесь любой утилитой для записи на флеш накопитель(например "Universal linux installer" или deamon tools lite)
       Шаг 2: Загрузитесь с флеш накопителя
 
@@ -82,7 +83,7 @@
            1. ./configure --prefix --flag2 --flag3 --flagN -- конфигурируем Makefile
            2. make --flag1 --flag2 --flagN -- компиляция в локальную папку
            3. make check --flag1 --flag2 --flagN -- проверка корректности установки
-           4. make install -- установка глобально
+           4. make install — установка глобально
         Например, что бы скомпилировать gcc, понадобилось сделать три прохода(с целью экономии времени и места я приведу всего один подход):
            Проход 1:
               шаг 0: распоковать gcc
@@ -159,3 +160,85 @@
           Texinfo-6.6
           Util-linux-2.33.1
           Xz-5.2.4
+      Стадия 2: разработка операционной системы:
+        Для разработки операционной системы требуется войти в в виртуальное окружение утилитой chroot и примонтировать псевдофайловые системы(всё это описано в начале документа в пункте "как запустить?").
+        В процессе разработки были выполнены следующие этапы:
+          1. Установка системных пакетов:
+            Linux headers 5.0
+            Man-pages-4.16
+            Glibc-2.29
+            Zlib-1.2.11
+            File-5.36
+            Readline-8.0
+            M4-1.4.18
+            Bc-1.07.1
+            Binutils-2.32
+            GMP-6.1.2
+            MPFR-4.0.2
+            MPC-1.1.0
+            Shadow-4.6
+            GCC-8.3.0
+            Bzip2-1.0.6
+            Pkg-config-0.29.2
+            Ncurses-6.1
+            Attr-2.4.48
+            Acl-2.2.53
+            Libcap-2.26
+            Sed-4.7
+            Psmisc-23.2
+            Lana-Etc-2.30
+            Bison-3.3.2
+            Flex-2.6.4
+            Grep-3.3
+            Bash-5.0
+            Libtool-2.4.6
+            GDBM-1.18.1
+            Gperf-3.1
+            Expat-2.2.5
+            Inetutils-1.9.4
+            Perl-5.28.1
+            XML-Parser-2.44
+            Intltool-0.51.0
+            Autoconf-2.69
+            Automake-1.16.1
+            Xz-5.2.4
+            Kmod-26
+            Gettext-0.19.8.1
+            Libelf-0.176
+            Libffi-3.2.1
+            OpenSSL-1.1.1b
+            Python-3.7.2
+            Ninja-1.9.0
+            Meson-0.49.2
+            Coreutils-8.30
+            Check-0.12.0
+            Diffutils-3.7
+            Gawk-4.2.1
+            Findutils-4.6.0
+            Groff-1.22.4
+            GRUB-2.02
+            Less-530
+            Gzip-1.10
+            IPRoute2-4.20.0
+            Kbd-2.0.4
+            Libpipeline-1.5.1
+            Make-4.2.1
+            Patch-2.7.6
+            Man-DB-2.8.5
+            Tar-1.32
+            Texinfo-6.6
+            Vim-8.1
+            Systemd-241
+            D-Bus-1.12.12
+            Procps-ng-3.3.15
+            Util-linux-2.33.1
+            E2fsprogs-1.44.5
+            Linux kernel 4.12
+            initramfs 4.12
+          2. Конфигурирование системы
+            На данном этапе я конфигурировал сеть, настроил устройства и модули, настраивал локализацию и systemd, компилировал ядро и initramfs. Подробности процесса конфигурирования опущены из-за объёмности выполненных действий. Так же из-за того, что часть действий производилась в псевдографическом интерфейсе.
+          3. Создание загрузочного образа
+            Для этого были отмонтированы все псевдофайловые системы, остановлены все процессы, сжат до минимальных разделов том, на котором велась разработка. Далее утилитой dd был сделан слепок конечной системы, который находится в этом репозитории в файле os.iso
+      ### Заключение
+        В результате данного проекта была создана полностью рабочая операционная система. Я не преследовал цель установки графической оболочки. Всё это можно запросто сделать по первой ссылке в google. На изображениях ниже будут приведены доказательства работоскособности операционной системы.
+![alt tag](https://pp.userapi.com/c851124/v851124111/ed0a4/-B5BRsdg-UQ.jpg)
