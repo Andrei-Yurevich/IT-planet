@@ -28,7 +28,7 @@
             sudo mount -vt proc proc $itplanet/proc
             sudo mount -vt sysfs sysfs $itplanet/sys
             sudo mount -vt tmpfs tmpfs $itplanet/run
-            if [ -h $itplanet/dev/shm ];  then
+            if [ -h $itplanet/dev/shm ]; then
               sudo mkdir -pv $itplanet/$(readlink $itplanet/dev/shm)
             fi
 
